@@ -17,3 +17,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 3. Error boundaries can be used to implement Client side validation check user input on all fields an show error on the UI in a user friendly manner when user input is not acceptable<br />
 4. Unit test can be implemented for each modulec / component.<br />
 5. Cypress can be used to automate end-to-end user functionality.<br />
+
+# Note to use add to history button:
+
+Once patient fills out symptoms and current health concerns text area, they can use add to history button to add to add to to their history, since we are not using any persist database right now.
