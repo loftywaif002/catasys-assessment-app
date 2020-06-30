@@ -119,12 +119,15 @@ class App extends Component {
       pcpName: '',
       currentHealthConcern: '',
       formSubmitted: false,
+      previousSymptoms: [],
+      previousHealthConcerns: [],
     }
     this.handleStateChange = this.handleStateChange.bind(this)
     this.handleDate = this.handleDate.bind(this)
     this.handlePhone = this.handlePhone.bind(this)
     this.handleCheckbox = this.handleCheckbox.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleAddToHistory = this.handleAddToHistory.bind(this)
   }
 
   handleDate = (date) => {
@@ -134,7 +137,6 @@ class App extends Component {
   }
 
   handlePhone = (phone) => {
-    console.log(phone)
     this.setState({ phone })
   }
 
@@ -163,6 +165,23 @@ class App extends Component {
     this.setState({ formSubmitted: false })
   }
 
+  handleAddToHistory = () => {
+    const { healthConcerns, currentHealthConcern } = this.state
+    if (isEmpty(healthConcerns) || isEmpty(currentHealthConcern)) {
+      alert('Sorry there is not history for this patient')
+    } else {
+      this.setState({
+        previousSymptoms: [...this.state.previousSymptoms, healthConcerns],
+      })
+      this.setState({
+        previousHealthConcerns: [
+          ...this.state.previousHealthConcerns,
+          currentHealthConcern,
+        ],
+      })
+    }
+  }
+
   render() {
     const { classes } = this.props
     const {
@@ -174,6 +193,10 @@ class App extends Component {
       checkedNo,
       pcpName,
       formSubmitted,
+      healthConcerns,
+      currentHealthConcern,
+      previousSymptoms,
+      previousHealthConcerns,
     } = this.state
     const disabled =
       isEmpty(firstName) || isEmpty(lastName) || isEmpty(dob) || isEmpty(phone)
@@ -343,6 +366,19 @@ class App extends Component {
                 </>
               )}
             </>
+
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={disabled}
+              onClick={() => {
+                this.handleAddToHistory()
+              }}
+              className={classes.button}
+            >
+              Add to History
+            </Button>
+
             <Button
               variant="contained"
               color="primary"
@@ -364,31 +400,53 @@ class App extends Component {
                 id="customized-dialog-title"
                 onClose={this.handleClose}
               >
-                Modal title
+                History
               </DialogTitle>
               <DialogContent dividers>
-                <Typography gutterBottom>
-                  Cras mattis consectetur purus sit amet fermentum. Cras justo
-                  odio, dapibus ac facilisis in, egestas eget quam. Morbi leo
-                  risus, porta ac consectetur ac, vestibulum at eros.
+                <Typography variant="subtitle1" gutterBottom>
+                  FirstName : {firstName}
                 </Typography>
-                <Typography gutterBottom>
-                  Praesent commodo cursus magna, vel scelerisque nisl
-                  consectetur et. Vivamus sagittis lacus vel augue laoreet
-                  rutrum faucibus dolor auctor.
+                <Typography variant="subtitle1" gutterBottom>
+                  LastName : {lastName}
                 </Typography>
-                <Typography gutterBottom>
-                  Aenean lacinia bibendum nulla sed consectetur. Praesent
-                  commodo cursus magna, vel scelerisque nisl consectetur et.
-                  Donec sed odio dui. Donec ullamcorper nulla non metus auctor
-                  fringilla.
+                <Typography variant="subtitle1" gutterBottom>
+                  Date of Birth : {dob}
                 </Typography>
+                {!isEmpty(pcpName) && (
+                  <Typography variant="subtitle1" gutterBottom>
+                    PCP Name : {pcpName}
+                  </Typography>
+                )}
+
+                {!isEmpty(healthConcerns) && (
+                  <Typography variant="body1" gutterBottom>
+                    HealthConcerns : {healthConcerns}
+                  </Typography>
+                )}
+                {!isEmpty(currentHealthConcern) && (
+                  <Typography variant="body1" gutterBottom>
+                    Current Health Concerns : {currentHealthConcern}
+                  </Typography>
+                )}
+                {this.state.previousSymptoms.length > 0 &&
+                  this.state.previousHealthConcerns.length > 0 && (
+                    <>
+                      <Typography variant="h6" gutterBottom>
+                        Previously Submitted Data
+                      </Typography>
+                      {previousSymptoms.map((symptoms, index) => (
+                        <Typography variant="body1" gutterBottom>
+                          HealthConcerns : {symptoms}
+                        </Typography>
+                      ))}
+                      {previousHealthConcerns.map((concerns, index) => (
+                        <Typography variant="body1" gutterBottom>
+                          previousHealthConcerns : {concerns}
+                        </Typography>
+                      ))}
+                    </>
+                  )}
               </DialogContent>
-              <DialogActions>
-                <Button autoFocus onClick={this.handleClose} color="primary">
-                  Save changes
-                </Button>
-              </DialogActions>
             </Dialog>
           </>
         </main>
