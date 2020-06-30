@@ -5,6 +5,8 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from '@material-ui/pickers'
+import Dialog from '@material-ui/core/Dialog'
+import isEmpty from 'lodash/isEmpty'
 import PhoneInput from 'mui-phone-input'
 import FormGroup from '@material-ui/core/FormGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -15,12 +17,28 @@ import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Paper from '@material-ui/core/Paper'
 import Grid from '@material-ui/core/Grid'
-
+import MuiDialogTitle from '@material-ui/core/DialogTitle'
+import MuiDialogContent from '@material-ui/core/DialogContent'
+import MuiDialogActions from '@material-ui/core/DialogActions'
+import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close'
+import Button from '@material-ui/core/Button'
+import TextareaAutosize from '@material-ui/core/TextareaAutosize'
 import TextField from '@material-ui/core/TextField'
 
 import Typography from '@material-ui/core/Typography'
 
 const styles = (theme) => ({
+  root: {
+    margin: 0,
+    padding: theme.spacing(2),
+  },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
   appBar: {
     position: 'relative',
   },
@@ -56,6 +74,37 @@ const styles = (theme) => ({
   },
 })
 
+const DialogTitle = withStyles(styles)((props) => {
+  const { children, classes, onClose, ...other } = props
+  return (
+    <MuiDialogTitle disableTypography className={classes.root} {...other}>
+      <Typography variant="h6">{children}</Typography>
+      {onClose ? (
+        <IconButton
+          aria-label="close"
+          className={classes.closeButton}
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </IconButton>
+      ) : null}
+    </MuiDialogTitle>
+  )
+})
+
+const DialogContent = withStyles((theme) => ({
+  root: {
+    padding: theme.spacing(2),
+  },
+}))(MuiDialogContent)
+
+const DialogActions = withStyles((theme) => ({
+  root: {
+    margin: 0,
+    padding: theme.spacing(1),
+  },
+}))(MuiDialogActions)
+
 class App extends Component {
   constructor(props) {
     super(props)
@@ -66,11 +115,16 @@ class App extends Component {
       phone: '',
       checkedYes: false,
       checkedNo: false,
+      healthConcerns: '',
+      pcpName: '',
+      currentHealthConcern: '',
+      formSubmitted: false,
     }
     this.handleStateChange = this.handleStateChange.bind(this)
     this.handleDate = this.handleDate.bind(this)
     this.handlePhone = this.handlePhone.bind(this)
     this.handleCheckbox = this.handleCheckbox.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
   handleDate = (date) => {
@@ -97,9 +151,33 @@ class App extends Component {
     }
   }
 
+  handleSubmit = () => {
+    this.handleClickOpen()
+  }
+
+  handleClickOpen = () => {
+    this.setState({ formSubmitted: true })
+  }
+
+  handleClose = () => {
+    this.setState({ formSubmitted: false })
+  }
+
   render() {
     const { classes } = this.props
-    const { firstName, lastName, dob, checkedYes, checkedNo } = this.state
+    const {
+      firstName,
+      lastName,
+      dob,
+      phone,
+      checkedYes,
+      checkedNo,
+      pcpName,
+      formSubmitted,
+    } = this.state
+    const disabled =
+      isEmpty(firstName) || isEmpty(lastName) || isEmpty(dob) || isEmpty(phone)
+
     return (
       <MuiPickersUtilsProvider utils={MomentUtils}>
         <CssBaseline />
@@ -209,8 +287,110 @@ class App extends Component {
                   label="No"
                 />
               </FormGroup>
+              {checkedYes && (
+                <>
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    className={classes.subtitle}
+                  >
+                    PCP name text field
+                  </Typography>
+                  <TextField
+                    onChange={(e) => {
+                      this.handleStateChange('pcpName', e)
+                    }}
+                    value={pcpName}
+                    required
+                    id="pcpName"
+                    name="pcpName"
+                    label="Name"
+                    fullWidth
+                    autoComplete="given-name"
+                  />
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    className={classes.subtitle}
+                  >
+                    Health Concerns and Symptoms
+                  </Typography>
+                  <TextareaAutosize
+                    aria-label="minimum height"
+                    style={{ width: '500px' }}
+                    rowsMin={5}
+                    onChange={(e) => {
+                      this.handleStateChange('healthConcerns', e)
+                    }}
+                    placeholder="Write Concerns and Symptoms here"
+                  />
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    className={classes.subtitle}
+                  >
+                    What are your current health concerns?
+                  </Typography>
+                  <TextareaAutosize
+                    aria-label="minimum height"
+                    style={{ width: '500px' }}
+                    rowsMin={5}
+                    onChange={(e) => {
+                      this.handleStateChange('currentHealthConcern', e)
+                    }}
+                    placeholder="Write current health concerns heres"
+                  />
+                </>
+              )}
             </>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={disabled}
+              onClick={this.handleSubmit}
+              className={classes.button}
+            >
+              Submit
+            </Button>
           </Paper>
+          {/*history dialog section*/}
+          <>
+            <Dialog
+              onClose={this.handleClose}
+              aria-labelledby="customized-dialog-title"
+              open={formSubmitted}
+            >
+              <DialogTitle
+                id="customized-dialog-title"
+                onClose={this.handleClose}
+              >
+                Modal title
+              </DialogTitle>
+              <DialogContent dividers>
+                <Typography gutterBottom>
+                  Cras mattis consectetur purus sit amet fermentum. Cras justo
+                  odio, dapibus ac facilisis in, egestas eget quam. Morbi leo
+                  risus, porta ac consectetur ac, vestibulum at eros.
+                </Typography>
+                <Typography gutterBottom>
+                  Praesent commodo cursus magna, vel scelerisque nisl
+                  consectetur et. Vivamus sagittis lacus vel augue laoreet
+                  rutrum faucibus dolor auctor.
+                </Typography>
+                <Typography gutterBottom>
+                  Aenean lacinia bibendum nulla sed consectetur. Praesent
+                  commodo cursus magna, vel scelerisque nisl consectetur et.
+                  Donec sed odio dui. Donec ullamcorper nulla non metus auctor
+                  fringilla.
+                </Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button autoFocus onClick={this.handleClose} color="primary">
+                  Save changes
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
         </main>
       </MuiPickersUtilsProvider>
     )
